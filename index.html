@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZeroShot Video — AI Video Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark"><i class="bi bi-camera-reels-fill"></i></div>
+      <span class="brand-text">ZeroShot<span class="brand-accent">Video</span></span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-view="dashboard">
+        <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-item" data-view="storyboard">
+        <i class="bi bi-kanban-fill"></i><span>Storyboard Workshop</span>
+      </a>
+      <a href="#" class="nav-item" data-view="generate">
+        <i class="bi bi-stars"></i><span>Generate</span>
+      </a>
+      <a href="#" class="nav-item" data-view="editor">
+        <i class="bi bi-film"></i><span>Scene Builder</span>
+      </a>
+      <a href="#" class="nav-item" data-view="elements">
+        <i class="bi bi-people-fill"></i><span>Elements &amp; Assets</span>
+      </a>
+      <a href="#" class="nav-item" data-view="tools">
+        <i class="bi bi-tools"></i><span>Tools Panel</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="model-pill" title="Active generative models">
+        <i class="bi bi-cpu"></i> 3 Models Online
+      </div>
+      <a href="#" class="nav-item" data-view="settings">
+        <i class="bi bi-gear-fill"></i><span>Settings</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main-col">
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <button class="btn-icon d-lg-none" id="btnToggleSidebar"><i class="bi bi-list"></i></button>
+
+      <div class="project-select">
+        <i class="bi bi-folder2-open"></i>
+        <select class="form-select form-select-sm" id="projectSelect">
+          <option>Neon Streets — Episode 1</option>
+          <option>Product Launch Teaser</option>
+          <option>Untitled Project</option>
+        </select>
+      </div>
+
+      <div class="topbar-spacer"></div>
+
+      <div class="quality-toggle" role="group">
+        <button class="qt-btn active" data-mode="fast"><i class="bi bi-lightning-fill"></i> Fast</button>
+        <button class="qt-btn" data-mode="quality"><i class="bi bi-gem"></i> Quality</button>
+      </div>
+
+      <div class="credit-widget" title="Remaining generation credits">
+        <i class="bi bi-coin"></i>
+        <span id="creditCount">2,480</span>
+        <button class="btn btn-sm btn-outline-light ms-2" id="btnAddCredits">+</button>
+      </div>
+
+      <div class="avatar-stack">
+        <div class="user-avatar stacked">AM</div>
+        <div class="user-avatar">JD</div>
+      </div>
+      <button class="btn-share">Share</button>
+    </header>
+
+    <!-- VIEWS -->
+    <main class="view-area" id="viewArea">
+
+      <!-- ---------------- DASHBOARD ---------------- -->
+      <section class="view active" id="view-dashboard">
+        <div class="view-header">
+          <h1>Projects</h1>
+          <button class="btn btn-primary" id="btnNewProject"><i class="bi bi-plus-lg"></i> New Project</button>
+        </div>
+        <div class="row g-3" id="projectGrid"></div>
+      </section>
+
+      <!-- ---------------- STORYBOARD WORKSHOP ---------------- -->
+      <section class="view" id="view-storyboard">
+        <div class="view-header">
+          <h1>Storyboard Workshop</h1>
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-light"><i class="bi bi-upload"></i> Upload Script</button>
+            <button class="btn btn-primary" id="btnGenerateStoryboard"><i class="bi bi-magic"></i> Generate Storyboard</button>
+          </div>
+        </div>
+
+        <div class="storyboard-input-card">
+          <label class="form-label small text-muted">Script or Text Description</label>
+          <textarea class="form-control" id="storyboardScript" rows="4" placeholder="Paste your script, or describe the story beat by beat...">A neon-lit alley at night. RYAN, a weary detective, spots a shadow moving between the rain-slicked walls. He draws closer, breath fogging in the cold air...</textarea>
+          <div class="d-flex gap-2 mt-2 flex-wrap">
+            <span class="chip"><i class="bi bi-person-badge"></i> @Ryan</span>
+            <span class="chip"><i class="bi bi-geo-alt"></i> @NeonAlley</span>
+            <span class="chip add-chip"><i class="bi bi-plus"></i> Add Element</span>
+          </div>
+        </div>
+
+        <h6 class="section-subtitle">Chronological Scene Sequence</h6>
+        <div class="storyboard-strip" id="storyboardStrip"></div>
+      </section>
+
+      <!-- ---------------- GENERATE ---------------- -->
+      <section class="view" id="view-generate">
+        <div class="view-header">
+          <h1>Generate</h1>
+        </div>
+
+        <ul class="nav nav-pills gen-tabs" id="genTabs">
+          <li class="nav-item"><button class="nav-link active" data-tab="t2v">Text-to-Video</button></li>
+          <li class="nav-item"><button class="nav-link" data-tab="f2v">Frames-to-Video</button></li>
+          <li class="nav-item"><button class="nav-link" data-tab="e2v">Elements-to-Video</button></li>
+        </ul>
+
+        <div class="gen-panels">
+          <!-- TEXT TO VIDEO -->
+          <div class="gen-panel active" data-panel="t2v">
+            <div class="gen-layout">
+              <div class="gen-form">
+                <label class="form-label small text-muted">Prompt</label>
+                <textarea class="form-control mb-3" rows="4" placeholder="Subject, environment, lighting, camera action, character interaction...">Wide shot: @Ryan walks through a rain-soaked neon alley, cinematic lighting, slow dolly-in, ambient city hum and distant thunder.</textarea>
+
+                <div class="row g-2 mb-3">
+                  <div class="col-6">
+                    <label class="form-label small text-muted">Model</label>
+                    <select class="form-select form-select-sm">
+                      <option>Pruna AI P-Video</option>
+                      <option>Gemini Flash Image 2.5</option>
+                    </select>
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label small text-muted">Duration</label>
+                    <select class="form-select form-select-sm">
+                      <option>8 seconds</option>
+                      <option selected>20 seconds (cinematic)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label small text-muted">Variations</label>
+                  <div class="d-flex gap-2">
+                    <button class="count-btn active" data-count="1">1</button>
+                    <button class="count-btn" data-count="2">2</button>
+                    <button class="count-btn" data-count="4">4</button>
+                  </div>
+                </div>
+
+                <button class="btn btn-primary w-100" id="btnRunT2V"><i class="bi bi-stars"></i> Generate — 40 credits</button>
+              </div>
+              <div class="gen-preview" id="t2vPreview">
+                <div class="preview-placeholder">
+                  <i class="bi bi-film"></i>
+                  <p>Your generated clips will appear here</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FRAMES TO VIDEO -->
+          <div class="gen-panel" data-panel="f2v">
+            <div class="gen-layout">
+              <div class="gen-form">
+                <label class="form-label small text-muted">Start Frame</label>
+                <div class="frame-drop" id="dropStart"><i class="bi bi-image"></i><span>Drop or click to upload</span></div>
+                <label class="form-label small text-muted mt-3">End Frame (optional)</label>
+                <div class="frame-drop" id="dropEnd"><i class="bi bi-image"></i><span>Drop or click to upload</span></div>
+                <label class="form-label small text-muted mt-3">Motion Prompt</label>
+                <textarea class="form-control mb-3" rows="2" placeholder="Describe the transition/motion...">Smooth pan left as the fog rolls in and lights flicker on.</textarea>
+                <button class="btn btn-primary w-100" id="btnRunF2V"><i class="bi bi-stars"></i> Generate — 40 credits</button>
+              </div>
+              <div class="gen-preview" id="f2vPreview">
+                <div class="preview-placeholder">
+                  <i class="bi bi-images"></i>
+                  <p>Frame interpolation preview appears here</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ELEMENTS TO VIDEO -->
+          <div class="gen-panel" data-panel="e2v">
+            <div class="gen-layout">
+              <div class="gen-form">
+                <label class="form-label small text-muted">Drag Elements into Scene</label>
+                <div class="element-dropzone" id="elementDropzone">
+                  <i class="bi bi-collection"></i>
+                  <p>Drop character / object / location elements here</p>
+                </div>
+                <label class="form-label small text-muted mt-3">Scene Prompt</label>
+                <textarea class="form-control mb-3" rows="3" placeholder="Describe how the dropped elements interact..."></textarea>
+                <button class="btn btn-primary w-100" id="btnRunE2V"><i class="bi bi-stars"></i> Generate — 40 credits</button>
+              </div>
+              <div class="gen-preview" id="e2vPreview">
+                <div class="preview-placeholder">
+                  <i class="bi bi-people"></i>
+                  <p>Drag elements from the library on the right</p>
+                </div>
+              </div>
+              <div class="gen-elements-lib" id="genElementsLib">
+                <h6>Element Library</h6>
+                <div class="mini-element-list" id="miniElementList"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------- SCENE BUILDER / EDITOR ---------------- -->
+      <section class="view" id="view-editor">
+        <div class="editor-layout">
+
+          <!-- Left: Canvas / Player -->
+          <div class="editor-stage">
+            <div class="stage-toolbar">
+              <div class="tool-group">
+                <button class="tool-btn active" data-tool="select" title="Select"><i class="bi bi-cursor"></i></button>
+                <button class="tool-btn" data-tool="lasso" title="AI Lasso Tool"><i class="bi bi-vector-pen"></i></button>
+                <button class="tool-btn" data-tool="insert" title="Insert Object"><i class="bi bi-plus-square"></i></button>
+                <button class="tool-btn" data-tool="remove" title="Remove Object"><i class="bi bi-eraser"></i></button>
+              </div>
+              <div class="tool-group">
+                <span class="badge-live" id="lassoStatus" style="display:none;">Lasso Active — draw a region</span>
+              </div>
+              <div class="tool-group">
+                <button class="btn btn-sm btn-outline-light" id="btnResizeCanvas"><i class="bi bi-aspect-ratio"></i> 16:9</button>
+              </div>
+            </div>
+
+            <div class="stage-canvas-wrap" id="stageCanvasWrap">
+              <img src="https://picsum.photos/seed/zeroshot1/960/540" id="stageImage" class="stage-image" alt="scene preview">
+              <canvas id="lassoCanvas" class="lasso-canvas"></canvas>
+              <div class="overlay-text-layer" id="overlayTextLayer" style="display:none;">
+                <div class="overlay-text-item" id="draggableCaption">YOUR TEXT HERE</div>
+              </div>
+            </div>
+
+            <div class="stage-transport">
+              <button class="btn-icon"><i class="bi bi-skip-start-fill"></i></button>
+              <button class="btn-icon" id="btnPlayPause"><i class="bi bi-play-fill"></i></button>
+              <button class="btn-icon"><i class="bi bi-skip-end-fill"></i></button>
+              <span class="timecode" id="timecodeDisplay">00:00:00 / 00:00:24</span>
+              <div class="flex-spacer"></div>
+              <button class="btn btn-sm btn-outline-light" id="btnExtendClip"><i class="bi bi-arrows-angle-expand"></i> Extend Clip</button>
+            </div>
+          </div>
+
+          <!-- Right: Inspector -->
+          <div class="editor-inspector" id="editorInspector">
+            <ul class="nav nav-tabs inspector-tabs">
+              <li class="nav-item"><button class="nav-link active" data-inspect="camera">Camera</button></li>
+              <li class="nav-item"><button class="nav-link" data-inspect="clip">Clip</button></li>
+              <li class="nav-item"><button class="nav-link" data-inspect="effects">Effects</button></li>
+            </ul>
+
+            <div class="inspector-panel active" data-panel="camera">
+              <h6>Camera Control Engine</h6>
+              <label class="ctl-label">Pan <span id="valPan">0</span>°</label>
+              <input type="range" class="form-range" min="-45" max="45" value="0" id="rangePan">
+              <label class="ctl-label">Tilt <span id="valTilt">0</span>°</label>
+              <input type="range" class="form-range" min="-45" max="45" value="0" id="rangeTilt">
+              <label class="ctl-label">Zoom <span id="valZoom">100</span>%</label>
+              <input type="range" class="form-range" min="50" max="200" value="100" id="rangeZoom">
+              <label class="ctl-label">Rotation <span id="valRotation">0</span>°</label>
+              <input type="range" class="form-range" min="-180" max="180" value="0" id="rangeRotation">
+              <div class="camera-presets">
+                <button class="preset-btn" data-preset="dolly-in"><i class="bi bi-arrows-collapse"></i> Dolly In</button>
+                <button class="preset-btn" data-preset="pan-left"><i class="bi bi-arrow-left"></i> Pan Left</button>
+                <button class="preset-btn" data-preset="orbit"><i class="bi bi-arrow-repeat"></i> Orbit</button>
+                <button class="preset-btn" data-preset="reset"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+              </div>
+            </div>
+
+            <div class="inspector-panel" data-panel="clip">
+              <h6>Selected Clip</h6>
+              <div class="clip-meta">
+                <div class="clip-meta-row"><span>Name</span><strong>Scene_03_Alley</strong></div>
+                <div class="clip-meta-row"><span>Model</span><strong>Pruna P-Video</strong></div>
+                <div class="clip-meta-row"><span>Duration</span><strong>8.0s</strong></div>
+                <div class="clip-meta-row"><span>Audio</span><strong>Synced (Ambient)</strong></div>
+              </div>
+              <label class="ctl-label mt-2">Transition Out</label>
+              <select class="form-select form-select-sm">
+                <option>Cut</option>
+                <option selected>Cross Dissolve</option>
+                <option>Whip Pan</option>
+                <option>Fade to Black</option>
+              </select>
+            </div>
+
+            <div class="inspector-panel" data-panel="effects">
+              <h6>PixelBento &amp; Shader Effects</h6>
+              <div class="effect-list">
+                <label class="effect-item"><input type="checkbox"> Cinematic Color Grade</label>
+                <label class="effect-item"><input type="checkbox"> Lo-Fi Film Grain</label>
+                <label class="effect-item"><input type="checkbox"> Glitch Stutter</label>
+                <label class="effect-item"><input type="checkbox"> VHS Chromatic Shift</label>
+                <label class="effect-item"><input type="checkbox"> Bloom / Glow</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TIMELINE -->
+        <div class="timeline-panel">
+          <div class="timeline-toolbar">
+            <div class="tt-group">
+              <button class="btn-icon" id="btnZoomOutTl"><i class="bi bi-dash-lg"></i></button>
+              <button class="btn-icon" id="btnZoomInTl"><i class="bi bi-plus-lg"></i></button>
+              <button class="btn-icon" id="btnSplitClip" title="Split at playhead"><i class="bi bi-scissors"></i></button>
+              <button class="btn-icon" id="btnAddTrack" title="Add track"><i class="bi bi-layer-plus"></i></button>
+            </div>
+            <div class="tt-group ms-auto">
+              <span class="text-muted small">Snap</span>
+              <div class="form-check form-switch d-inline-block ms-2">
+                <input class="form-check-input" type="checkbox" checked id="snapToggle">
+              </div>
+            </div>
+          </div>
+          <div class="timeline-scroll" id="timelineScroll">
+            <div class="timeline-ruler" id="timelineRuler"></div>
+            <div class="timeline-playhead" id="timelinePlayhead"></div>
+            <div class="timeline-tracks" id="timelineTracks"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------- ELEMENTS & ASSETS ---------------- -->
+      <section class="view" id="view-elements">
+        <div class="view-header">
+          <h1>Elements &amp; Assets</h1>
+          <div class="d-flex gap-2">
+            <input type="search" class="form-control form-control-sm" style="width:220px" placeholder="Search elements..." id="elementSearch">
+            <button class="btn btn-primary" id="btnNewElement"><i class="bi bi-plus-lg"></i> New Element</button>
+          </div>
+        </div>
+
+        <ul class="nav nav-pills gen-tabs" id="elementFilterTabs">
+          <li class="nav-item"><button class="nav-link active" data-filter="all">All</button></li>
+          <li class="nav-item"><button class="nav-link" data-filter="character">Characters</button></li>
+          <li class="nav-item"><button class="nav-link" data-filter="object">Objects</button></li>
+          <li class="nav-item"><button class="nav-link" data-filter="location">Locations</button></li>
+        </ul>
+
+        <div class="asset-grid" id="assetGrid"></div>
+      </section>
+
+      <!-- ---------------- TOOLS PANEL ---------------- -->
+      <section class="view" id="view-tools">
+        <div class="view-header">
+          <h1>Tools Panel</h1>
+          <button class="btn btn-outline-light"><i class="bi bi-plus-lg"></i> Build Custom Tool</button>
+        </div>
+        <p class="text-muted">Build, share, and remix customized micro-workflows using plain natural language descriptions.</p>
+        <div class="row g-3" id="toolsGrid"></div>
+      </section>
+
+      <!-- ---------------- SETTINGS ---------------- -->
+      <section class="view" id="view-settings">
+        <div class="view-header"><h1>Settings</h1></div>
+        <div class="settings-card">
+          <h6>Ecosystem &amp; Access</h6>
+          <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" checked>
+            <label class="form-check-label">Enable mobile browser sync</label>
+          </div>
+          <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" checked>
+            <label class="form-check-label">Companion app notifications</label>
+          </div>
+          <h6 class="mt-4">Credit System</h6>
+          <p class="text-muted small">Balance computation speed with output quality. Toggle "Fast" or "Quality" mode from the top bar per generation.</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ============ CHARACTER MAP MODAL ============ -->
+<div class="modal fade" id="characterMapModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content" id="characterMapContent">
+      <!-- injected -->
+    </div>
+  </div>
+</div>
+
+<!-- ============ TOAST CONTAINER ============ -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/api.js"></script>
+<script src="js/timeline.js"></script>
+<script src="js/lasso.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
